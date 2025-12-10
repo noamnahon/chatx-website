@@ -1,0 +1,1167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChatX - AI Chat Assistant</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #050708;
+            --bg-darker: #0A1110;
+            --accent-green: #00C07A;
+            --text-primary: #FFFFFF;
+            --text-secondary: #A0A0A0;
+            --text-muted: #666666;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --border-subtle: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Sora', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(180deg, var(--bg-dark) 0%, var(--bg-darker) 100%);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* Cosmic Background with Stars */
+        .cosmic-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .stars {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: white;
+            border-radius: 50%;
+            opacity: 0.6;
+            animation: twinkle 3s infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.8; }
+        }
+
+        /* Generate stars with JavaScript instead for better performance */
+        
+        /* Glow Effects */
+        .glow-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.15;
+            pointer-events: none;
+        }
+
+        .glow-green {
+            width: 400px;
+            height: 400px;
+            background: var(--accent-green);
+            top: 10%;
+            right: -10%;
+            animation: float 20s ease-in-out infinite;
+        }
+
+        .glow-cyan {
+            width: 350px;
+            height: 350px;
+            background: #00FFFF;
+            bottom: 20%;
+            left: -10%;
+            animation: float 25s ease-in-out infinite reverse;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(50px, -50px) scale(1.1); }
+            66% { transform: translate(-30px, 30px) scale(0.9); }
+        }
+
+        /* Header */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            padding: 1.5rem 5%;
+            backdrop-filter: blur(20px);
+            background: rgba(5, 7, 8, 0.8);
+            border-bottom: 1px solid var(--border-subtle);
+            animation: slideDown 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.02em;
+        }
+
+        .logo-accent {
+            color: var(--accent-green);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2.5rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent-green);
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--accent-green);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        /* Hero Section */
+        .hero {
+            position: relative;
+            min-height: 95vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 4rem 5%;
+            z-index: 1;
+        }
+
+        .hero-content {
+            max-width: 900px;
+            animation: fadeInUp 1s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1.25rem;
+            background: var(--card-bg);
+            border: 1px solid var(--border-subtle);
+            border-radius: 50px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            animation: fadeInUp 1s cubic-bezier(0.16, 1, 0.3, 1) 0.5s both;
+        }
+
+        .badge-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--accent-green);
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.2); }
+        }
+
+        h1 {
+            font-size: clamp(2.5rem, 7vw, 5.5rem);
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            line-height: 1.1;
+            letter-spacing: -0.03em;
+            animation: fadeInUp 1s cubic-bezier(0.16, 1, 0.3, 1) 0.7s both;
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, var(--accent-green) 0%, #00FFB3 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-description {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            margin-bottom: 3rem;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.7;
+            animation: fadeInUp 1s cubic-bezier(0.16, 1, 0.3, 1) 0.9s both;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1.25rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            animation: fadeInUp 1s cubic-bezier(0.16, 1, 0.3, 1) 1.1s both;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: 'Sora', sans-serif;
+        }
+
+        .btn-primary {
+            background: var(--accent-green);
+            color: var(--bg-dark);
+            box-shadow: 0 4px 20px rgba(0, 192, 122, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 192, 122, 0.5);
+            background: #00D685;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-primary);
+            border: 2px solid var(--border-subtle);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent-green);
+            background: rgba(0, 192, 122, 0.1);
+            transform: translateY(-2px);
+        }
+
+        /* Features Section */
+        .section {
+            position: relative;
+            padding: 8rem 5%;
+            z-index: 1;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 5rem;
+        }
+
+        .section-tag {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: var(--card-bg);
+            border: 1px solid var(--border-subtle);
+            border-radius: 50px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--accent-green);
+            margin-bottom: 1rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .section-title {
+            font-size: clamp(2rem, 4vw, 3.5rem);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            letter-spacing: -0.02em;
+        }
+
+        .section-description {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            padding: 2.5rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-subtle);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent-green), transparent);
+            opacity: 0;
+            transition: opacity 0.4s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--accent-green);
+            box-shadow: 0 20px 40px rgba(0, 192, 122, 0.15);
+        }
+
+        .feature-card:hover::before {
+            opacity: 1;
+        }
+
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            background: rgba(0, 192, 122, 0.1);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(0, 192, 122, 0.2);
+        }
+
+        .feature-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+        }
+
+        .feature-card p {
+            color: var(--text-secondary);
+            line-height: 1.7;
+        }
+
+        /* Legal Sections */
+        .legal-section {
+            padding: 6rem 5%;
+            max-width: 1100px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .legal-section h2 {
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--border-subtle);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .legal-section h3 {
+            font-size: 1.5rem;
+            margin: 2.5rem 0 1rem;
+            color: var(--accent-green);
+            font-weight: 600;
+            letter-spacing: -0.01em;
+        }
+
+        .legal-section p,
+        .legal-section li {
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            font-size: 1rem;
+            line-height: 1.8;
+        }
+
+        .legal-section ul {
+            margin-left: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .legal-section li {
+            margin-bottom: 0.75rem;
+        }
+
+        .legal-section a {
+            color: var(--accent-green);
+            text-decoration: none;
+            transition: all 0.3s;
+            border-bottom: 1px solid transparent;
+        }
+
+        .legal-section a:hover {
+            border-bottom-color: var(--accent-green);
+        }
+
+        /* Data Deletion Form */
+        .deletion-form-wrapper {
+            max-width: 800px;
+            margin: 3rem auto;
+        }
+
+        .deletion-form {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            padding: 3rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-subtle);
+        }
+
+        .form-group {
+            margin-bottom: 2rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 1rem 1.25rem;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-family: 'Sora', sans-serif;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+            color: var(--text-muted);
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--accent-green);
+            background: rgba(255, 255, 255, 0.05);
+            box-shadow: 0 0 0 3px rgba(0, 192, 122, 0.1);
+        }
+
+        .form-group textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        .form-note {
+            background: rgba(0, 192, 122, 0.05);
+            border-left: 4px solid var(--accent-green);
+            padding: 1.5rem;
+            margin: 2rem 0;
+            border-radius: 8px;
+        }
+
+        .form-note p {
+            margin: 0;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 1.25rem;
+            font-size: 1rem;
+            font-weight: 600;
+            background: var(--accent-green);
+            color: var(--bg-dark);
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Sora', sans-serif;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 192, 122, 0.4);
+            background: #00D685;
+        }
+
+        .success-message {
+            display: none;
+            margin-top: 2rem;
+            padding: 2rem;
+            background: rgba(0, 192, 122, 0.1);
+            border: 2px solid var(--accent-green);
+            border-radius: 16px;
+            text-align: center;
+        }
+
+        .success-message p {
+            color: var(--accent-green);
+            margin: 0;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        /* Footer */
+        footer {
+            background: rgba(5, 7, 8, 0.8);
+            padding: 4rem 5% 2rem;
+            border-top: 1px solid var(--border-subtle);
+            position: relative;
+            z-index: 1;
+        }
+
+        .footer-content {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .footer-top {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 3rem;
+            margin-bottom: 3rem;
+        }
+
+        .footer-brand {
+            max-width: 300px;
+        }
+
+        .footer-logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+        }
+
+        .footer-brand p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.7;
+        }
+
+        .footer-section h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1.25rem;
+            color: var(--text-primary);
+        }
+
+        .footer-links {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .footer-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: var(--accent-green);
+            padding-left: 4px;
+        }
+
+        .footer-bottom {
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-subtle);
+            text-align: center;
+        }
+
+        .footer-bottom p {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-links {
+                gap: 1.5rem;
+                font-size: 0.875rem;
+            }
+
+            .hero {
+                min-height: 80vh;
+                padding: 3rem 5%;
+            }
+
+            h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero-description {
+                font-size: 1rem;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .section {
+                padding: 5rem 5%;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .deletion-form {
+                padding: 2rem 1.5rem;
+            }
+
+            .footer-top {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+        }
+
+        /* Scroll Animations */
+        .scroll-reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .scroll-reveal.revealed {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <!-- Cosmic Background -->
+    <div class="cosmic-bg">
+        <div class="stars" id="stars"></div>
+        <div class="glow-orb glow-green"></div>
+        <div class="glow-orb glow-cyan"></div>
+    </div>
+
+    <!-- Header -->
+    <header>
+        <nav>
+            <div class="logo">Chat<span class="logo-accent">X</span></div>
+            <ul class="nav-links">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#features">Features</a></li>
+                <li><a href="#privacy">Privacy</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="hero-content">
+            <div class="hero-badge">
+                <span class="badge-dot"></span>
+                <span>Powered by Advanced AI</span>
+            </div>
+            <h1>Your Intelligent <br><span class="gradient-text">AI Companion</span></h1>
+            <p class="hero-description">Experience the future of conversation with ChatX. Smart, intuitive, and always ready to help you navigate any challenge.</p>
+            <div class="cta-buttons">
+                <a href="#" class="btn btn-primary">
+                    <span>Download on App Store</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+                    </svg>
+                </a>
+                <a href="#" class="btn btn-primary">
+                    <span>Get it on Google Play</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="section">
+        <div class="container">
+            <div class="section-header scroll-reveal">
+                <span class="section-tag">Features</span>
+                <h2 class="section-title">Powerful AI at Your Fingertips</h2>
+                <p class="section-description">Discover the capabilities that make ChatX your perfect AI companion</p>
+            </div>
+
+            <div class="features-grid">
+                <div class="feature-card scroll-reveal">
+                    <div class="feature-icon">🤖</div>
+                    <h3>Advanced AI</h3>
+                    <p>Powered by cutting-edge artificial intelligence that understands context and provides intelligent, human-like responses.</p>
+                </div>
+
+                <div class="feature-card scroll-reveal">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Lightning Fast</h3>
+                    <p>Get instant responses with our optimized infrastructure designed for speed and reliability.</p>
+                </div>
+
+                <div class="feature-card scroll-reveal">
+                    <div class="feature-icon">🔒</div>
+                    <h3>Privacy First</h3>
+                    <p>Your conversations are encrypted and secure. We prioritize your privacy and data protection above all.</p>
+                </div>
+
+                <div class="feature-card scroll-reveal">
+                    <div class="feature-icon">🌐</div>
+                    <h3>Multi-Language</h3>
+                    <p>Communicate in your preferred language with support for multiple languages worldwide.</p>
+                </div>
+
+                <div class="feature-card scroll-reveal">
+                    <div class="feature-icon">💡</div>
+                    <h3>Smart Learning</h3>
+                    <p>Our AI learns from interactions to provide more personalized and relevant responses over time.</p>
+                </div>
+
+                <div class="feature-card scroll-reveal">
+                    <div class="feature-icon">📱</div>
+                    <h3>Cross-Platform</h3>
+                    <p>Available on iOS and Android, seamlessly sync across all your devices.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Privacy Policy Section -->
+    <section id="privacy" class="legal-section">
+        <h2>Privacy Policy</h2>
+        <p><strong>Effective Date:</strong> December 10, 2024</p>
+        <p><strong>Last Updated:</strong> December 10, 2024</p>
+
+        <h3>1. Introduction</h3>
+        <p>This Privacy Policy explains how ChatX ("we," "us," or "our") collects, uses, discloses, and safeguards your information when you use our mobile application. Please read this privacy policy carefully. If you do not agree with the terms of this privacy policy, please do not access the application.</p>
+
+        <h3>2. Information We Collect</h3>
+        <p>We collect information that you provide directly to us when you:</p>
+        <ul>
+            <li>Create an account and use our services</li>
+            <li>Send messages and interact with our AI chat assistant</li>
+            <li>Provide feedback or contact our support team</li>
+        </ul>
+
+        <p><strong>Types of data collected:</strong></p>
+        <ul>
+            <li><strong>Personal Information:</strong> Name, email address, user ID</li>
+            <li><strong>Usage Data:</strong> Chat history, interaction patterns, preferences</li>
+            <li><strong>Device Information:</strong> Device type, operating system, unique device identifiers</li>
+            <li><strong>Technical Data:</strong> IP address, browser type, app version</li>
+        </ul>
+
+        <h3>3. How We Use Your Information</h3>
+        <p>We use the information we collect to:</p>
+        <ul>
+            <li>Provide, maintain, and improve our services</li>
+            <li>Process your requests and provide customer support</li>
+            <li>Personalize your experience and provide relevant content</li>
+            <li>Communicate with you about updates, security alerts, and support messages</li>
+            <li>Monitor and analyze usage patterns to improve our AI algorithms</li>
+            <li>Detect, prevent, and address technical issues and security concerns</li>
+        </ul>
+
+        <h3>4. Data Sharing and Disclosure</h3>
+        <p>We do not sell, trade, or rent your personal information to third parties. We may share your information only in the following circumstances:</p>
+        <ul>
+            <li><strong>Service Providers:</strong> With third-party service providers who perform services on our behalf (e.g., cloud hosting, analytics)</li>
+            <li><strong>Legal Requirements:</strong> When required by law or to respond to legal processes</li>
+            <li><strong>Business Transfers:</strong> In connection with a merger, acquisition, or sale of assets</li>
+            <li><strong>With Your Consent:</strong> When you have given explicit consent for specific purposes</li>
+        </ul>
+
+        <p><strong>Third-Party Services:</strong> We may use the following third-party services:</p>
+        <ul>
+            <li>Analytics providers (e.g., Google Analytics, Firebase Analytics)</li>
+            <li>Cloud storage providers (e.g., AWS, Google Cloud)</li>
+            <li>Authentication services</li>
+        </ul>
+        <p>These third parties are bound by their own privacy policies and our data processing agreements.</p>
+
+        <h3>5. Data Retention</h3>
+        <p>We retain your personal information for as long as necessary to:</p>
+        <ul>
+            <li>Provide our services to you</li>
+            <li>Comply with legal obligations</li>
+            <li>Resolve disputes and enforce our agreements</li>
+        </ul>
+        <p>When you request deletion of your account, we will delete your personal information within 30 days, except where retention is required by law.</p>
+
+        <h3>6. Your Data Rights</h3>
+        <p>You have the following rights regarding your personal data:</p>
+        <ul>
+            <li><strong>Access:</strong> Request a copy of the personal information we hold about you</li>
+            <li><strong>Correction:</strong> Request correction of inaccurate or incomplete information</li>
+            <li><strong>Deletion:</strong> Request deletion of your personal information (see Data Deletion section below)</li>
+            <li><strong>Portability:</strong> Request transfer of your data to another service</li>
+            <li><strong>Objection:</strong> Object to processing of your personal information</li>
+            <li><strong>Withdrawal of Consent:</strong> Withdraw consent where processing is based on consent</li>
+        </ul>
+
+        <h3>7. Account and Data Deletion</h3>
+        <p>You have the right to request deletion of your account and all associated personal data. You can request deletion through:</p>
+        <ul>
+            <li>The in-app settings menu under "Account Settings" > "Delete Account"</li>
+            <li>The data deletion request form below on this page</li>
+            <li>Contacting our support team at <a href="mailto:privacy@chatx.app">privacy@chatx.app</a></li>
+        </ul>
+        <p>Upon receiving your deletion request, we will:</p>
+        <ul>
+            <li>Verify your identity to prevent unauthorized deletion requests</li>
+            <li>Delete your account and all associated personal data within 30 days</li>
+            <li>Send you a confirmation email once the deletion is complete</li>
+            <li>Retain only information required by law or for legitimate business purposes (e.g., fraud prevention, legal compliance)</li>
+        </ul>
+
+        <h3>8. Data Security</h3>
+        <p>We implement appropriate technical and organizational security measures to protect your personal information, including:</p>
+        <ul>
+            <li>Encryption of data in transit and at rest</li>
+            <li>Regular security assessments and audits</li>
+            <li>Access controls and authentication mechanisms</li>
+            <li>Secure server infrastructure</li>
+        </ul>
+        <p>However, no method of transmission over the internet is 100% secure, and we cannot guarantee absolute security.</p>
+
+        <h3>9. Children's Privacy</h3>
+        <p>Our service is not intended for children under the age of 13 (or 16 in the European Economic Area). We do not knowingly collect personal information from children. If you are a parent or guardian and believe your child has provided us with personal information, please contact us, and we will delete such information.</p>
+
+        <h3>10. International Data Transfers</h3>
+        <p>Your information may be transferred to and processed in countries other than your country of residence. We ensure appropriate safeguards are in place to protect your information in accordance with this Privacy Policy and applicable laws.</p>
+
+        <h3>11. Changes to This Privacy Policy</h3>
+        <p>We may update this Privacy Policy from time to time. We will notify you of any changes by:</p>
+        <ul>
+            <li>Posting the new Privacy Policy on this page</li>
+            <li>Updating the "Last Updated" date</li>
+            <li>Sending you an in-app notification or email for material changes</li>
+        </ul>
+        <p>Your continued use of the app after changes are made constitutes acceptance of the updated Privacy Policy.</p>
+
+        <h3>12. Contact Information</h3>
+        <p>If you have any questions, concerns, or requests regarding this Privacy Policy or our data practices, please contact us:</p>
+        <ul>
+            <li><strong>Email:</strong> <a href="mailto:privacy@chatx.app">privacy@chatx.app</a></li>
+            <li><strong>Support Email:</strong> <a href="mailto:support@chatx.app">support@chatx.app</a></li>
+            <li><strong>Website:</strong> https://www.chatx.app</li>
+        </ul>
+
+        <h3>13. Legal Basis for Processing (GDPR)</h3>
+        <p>For users in the European Economic Area, we process your personal data based on:</p>
+        <ul>
+            <li><strong>Consent:</strong> You have given clear consent for specific processing purposes</li>
+            <li><strong>Contract:</strong> Processing is necessary to fulfill our contract with you</li>
+            <li><strong>Legal Obligation:</strong> Processing is necessary to comply with legal requirements</li>
+            <li><strong>Legitimate Interests:</strong> Processing is necessary for our legitimate interests, provided these are not overridden by your rights</li>
+        </ul>
+
+        <h3>14. California Privacy Rights (CCPA)</h3>
+        <p>California residents have additional rights under the California Consumer Privacy Act (CCPA), including:</p>
+        <ul>
+            <li>Right to know what personal information is collected</li>
+            <li>Right to know whether personal information is sold or disclosed</li>
+            <li>Right to opt-out of the sale of personal information</li>
+            <li>Right to deletion of personal information</li>
+            <li>Right to non-discrimination for exercising CCPA rights</li>
+        </ul>
+        <p>We do not sell your personal information to third parties.</p>
+    </section>
+
+    <!-- Terms of Service Section -->
+    <section id="terms" class="legal-section">
+        <h2>Terms of Service</h2>
+        <p><strong>Effective Date:</strong> December 10, 2024</p>
+        <p><strong>Last Updated:</strong> December 10, 2024</p>
+
+        <h3>1. Acceptance of Terms</h3>
+        <p>By accessing and using ChatX ("the App"), you accept and agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use the App.</p>
+
+        <h3>2. Description of Service</h3>
+        <p>ChatX provides an AI-powered conversational interface that allows users to interact with an artificial intelligence system through text-based chat. The service includes features such as natural language processing, context-aware responses, and personalized interactions.</p>
+
+        <h3>3. User Responsibilities</h3>
+        <p>You agree to:</p>
+        <ul>
+            <li>Provide accurate and complete information when creating an account</li>
+            <li>Maintain the security of your account credentials</li>
+            <li>Use the App in compliance with all applicable laws and regulations</li>
+            <li>Not use the App for any illegal, harmful, or abusive purposes</li>
+            <li>Not attempt to circumvent security measures or access unauthorized areas</li>
+            <li>Not impersonate others or misrepresent your affiliation with any person or entity</li>
+        </ul>
+
+        <h3>4. Prohibited Uses</h3>
+        <p>You may not use the App to:</p>
+        <ul>
+            <li>Violate any laws or regulations</li>
+            <li>Infringe on intellectual property rights</li>
+            <li>Transmit harmful code, viruses, or malware</li>
+            <li>Harass, abuse, or harm others</li>
+            <li>Collect user information without consent</li>
+            <li>Interfere with the proper functioning of the App</li>
+        </ul>
+
+        <h3>5. Intellectual Property</h3>
+        <p>All content, features, and functionality of the App are owned by us and are protected by copyright, trademark, and other intellectual property laws. You may not copy, modify, distribute, or create derivative works without our express permission.</p>
+
+        <h3>6. Disclaimer of Warranties</h3>
+        <p>The App is provided "as is" and "as available" without warranties of any kind, either express or implied. We do not warrant that the App will be uninterrupted, error-free, or secure.</p>
+
+        <h3>7. Limitation of Liability</h3>
+        <p>To the maximum extent permitted by law, we shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising from your use of the App.</p>
+
+        <h3>8. Termination</h3>
+        <p>We reserve the right to terminate or suspend your account at any time for violation of these Terms of Service or for any other reason at our sole discretion.</p>
+
+        <h3>9. Changes to Terms</h3>
+        <p>We may modify these Terms of Service at any time. Continued use of the App after changes constitutes acceptance of the modified terms.</p>
+
+        <h3>10. Governing Law</h3>
+        <p>These Terms shall be governed by and construed in accordance with applicable laws, without regard to conflict of law principles.</p>
+
+        <h3>11. Contact Information</h3>
+        <p>For questions about these Terms of Service, contact us at <a href="mailto:legal@chatx.app">legal@chatx.app</a></p>
+    </section>
+
+    <!-- Data Deletion Request Section -->
+    <section id="contact" class="legal-section">
+        <h2>Data Deletion Request</h2>
+        <p>Request deletion of your account and all associated personal data. We will process your request within 30 days and send you a confirmation email once completed.</p>
+        
+        <div class="deletion-form-wrapper">
+            <div class="deletion-form">
+                <form id="deletionForm" onsubmit="handleFormSubmit(event)">
+                    <div class="form-group">
+                        <label for="name">Full Name *</label>
+                        <input type="text" id="name" name="name" required placeholder="Enter your full name">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Email Address *</label>
+                        <input type="email" id="email" name="email" required placeholder="Email associated with your account">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="userId">User ID (Optional)</label>
+                        <input type="text" id="userId" name="userId" placeholder="Your user ID if known">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="reason">Reason for Deletion (Optional)</label>
+                        <textarea id="reason" name="reason" placeholder="Help us improve by sharing why you're leaving..."></textarea>
+                    </div>
+
+                    <div class="form-note">
+                        <p><strong>Please Note:</strong> Once your data is deleted, this action cannot be undone. You will lose access to all your chat history, preferences, and account settings. We will retain only information required by law or for legitimate business purposes (e.g., fraud prevention).</p>
+                    </div>
+
+                    <button type="submit" class="submit-btn">Submit Data Deletion Request</button>
+                </form>
+
+                <div id="successMessage" class="success-message">
+                    <p>✓ Your deletion request has been submitted successfully! We will process your request within 30 days and send a confirmation email to the address you provided.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Support Section -->
+    <section class="legal-section">
+        <h2>Support & Contact</h2>
+        <p>For any questions, concerns, or support requests, please reach out to us:</p>
+        <ul>
+            <li><strong>General Support:</strong> <a href="mailto:support@chatx.app">support@chatx.app</a></li>
+            <li><strong>Privacy Inquiries:</strong> <a href="mailto:privacy@chatx.app">privacy@chatx.app</a></li>
+            <li><strong>Legal Matters:</strong> <a href="mailto:legal@chatx.app">legal@chatx.app</a></li>
+            <li><strong>Website:</strong> https://www.chatx.app</li>
+        </ul>
+        <p>We typically respond to support requests within 24-48 hours during business days.</p>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-top">
+                <div class="footer-brand">
+                    <div class="footer-logo">Chat<span class="logo-accent">X</span></div>
+                    <p>Experience the future of conversation with advanced AI technology. Smart, secure, and always ready to help.</p>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Product</h4>
+                    <div class="footer-links">
+                        <a href="#features">Features</a>
+                        <a href="#home">Download</a>
+                        <a href="#privacy">Privacy</a>
+                    </div>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Legal</h4>
+                    <div class="footer-links">
+                        <a href="#privacy">Privacy Policy</a>
+                        <a href="#terms">Terms of Service</a>
+                        <a href="#contact">Data Deletion</a>
+                    </div>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <div class="footer-links">
+                        <a href="mailto:support@chatx.app">Contact Support</a>
+                        <a href="mailto:privacy@chatx.app">Privacy Inquiries</a>
+                        <a href="mailto:legal@chatx.app">Legal Matters</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2024 ChatX. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Generate stars
+        function createStars() {
+            const starsContainer = document.getElementById('stars');
+            const starCount = 100;
+            
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.animationDelay = Math.random() * 3 + 's';
+                star.style.opacity = Math.random() * 0.5 + 0.3;
+                starsContainer.appendChild(star);
+            }
+        }
+
+        createStars();
+
+        // Smooth scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Form submission
+        function handleFormSubmit(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(event.target);
+            const data = {
+                name: formData.get('name'),
+                email: formData.get('email'),
+                userId: formData.get('userId'),
+                reason: formData.get('reason'),
+                timestamp: new Date().toISOString()
+            };
+
+            console.log('Deletion request submitted:', data);
+
+            document.getElementById('deletionForm').style.display = 'none';
+            document.getElementById('successMessage').style.display = 'block';
+        }
+
+        // Scroll reveal animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -100px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('revealed');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.scroll-reveal').forEach(el => {
+            observer.observe(el);
+        });
+    </script>
+</body>
+</html>
